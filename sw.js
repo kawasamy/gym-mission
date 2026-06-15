@@ -1,4 +1,4 @@
-const CACHE_NAME = 'protein-widget-v29';
+const CACHE_NAME = 'protein-widget-v31';
 const ASSETS = [
     'index.html',
     'style.css',

@@ -85,6 +85,7 @@ function init() {
     if (savedDuration !== null) {
         defaultRestDuration = parseInt(savedDuration, 10) || 120;
     }
+    restTimeRemaining = defaultRestDuration;
 
     // Load Rest Timer End Time from localStorage
     const savedEndTime = localStorage.getItem('rest_timer_end_time');
@@ -94,8 +95,12 @@ function init() {
             startRestTimer(true);
         } else {
             localStorage.removeItem('rest_timer_end_time');
+            localStorage.removeItem('rest_timer_start_duration');
             restTimerEndTime = null;
+            updateTimerText();
         }
+    } else {
+        updateTimerText();
     }
 
     // Load Workout Start Time from localStorage
@@ -469,7 +474,7 @@ function startRestTimer(isResume = false) {
     const remainingMs = restTimerEndTime - Date.now();
     restTimeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
     
-    restTimerContainer.style.display = 'flex';
+    restTimerContainer.classList.add('active');
     restTimerDisplay.classList.remove('finished');
     updateTimerText();
     
@@ -505,11 +510,10 @@ function startRestTimer(isResume = false) {
             restTimerTextDisplay.textContent = '준비 완료!';
             restTimerDisplay.classList.add('finished');
             
-            // Auto-hide the "Ready!" notice after 10 seconds
+            // Auto-reset to idle after 10 seconds
             setTimeout(() => {
                 if (restTimerDisplay.classList.contains('finished')) {
-                    restTimerContainer.style.display = 'none';
-                    restTimerDisplay.classList.remove('finished');
+                    cancelRestTimer();
                 }
             }, 10000);
         } else {
@@ -527,7 +531,7 @@ function updateTimerText() {
     restTimerTextDisplay.textContent = formattedMins + ':' + formattedSecs;
 }
 
-// Cancel / Skip active timer
+// Cancel / Skip active timer or manually start it
 function handleTimerClick() {
     if (restTimerInterval) {
         // Timer was active, calculate elapsed time and save
@@ -538,9 +542,12 @@ function handleTimerClick() {
         }
         cancelRestTimer();
     } else if (restTimerDisplay.classList.contains('finished')) {
-        // Timer was already finished ("준비 완료!" flashing), just hide it
-        restTimerContainer.style.display = 'none';
-        restTimerDisplay.classList.remove('finished');
+        // Timer was already finished ("준비 완료!" flashing), return to idle
+        cancelRestTimer();
+    } else {
+        // Timer was idle, start it manually!
+        initAudioContext();
+        startRestTimer();
     }
 }
 
@@ -553,8 +560,10 @@ function cancelRestTimer() {
     localStorage.removeItem('rest_timer_end_time');
     localStorage.removeItem('rest_timer_start_duration');
     
-    restTimerContainer.style.display = 'none';
+    restTimerContainer.classList.remove('active');
     restTimerDisplay.classList.remove('finished');
+    restTimeRemaining = defaultRestDuration;
+    updateTimerText();
     
     if (navigator.vibrate) {
         navigator.vibrate(30);
@@ -605,6 +614,12 @@ function setTimerDuration(seconds) {
         localStorage.setItem('rest_timer_end_time', restTimerEndTime);
         restTimerStartDuration = seconds;
         localStorage.setItem('rest_timer_start_duration', restTimerStartDuration);
+        const remainingMs = restTimerEndTime - Date.now();
+        restTimeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
+        updateTimerText();
+    } else if (!restTimerDisplay.classList.contains('finished')) {
+        // If idle, update the displayed default duration immediately
+        restTimeRemaining = seconds;
         updateTimerText();
     }
     

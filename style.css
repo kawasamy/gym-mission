@@ -648,21 +648,27 @@ body {
     height: 38px;
 }
 
-/* Rest Timer Display */
+/* Default Idle State */
 .rest-timer-display {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--theme-color);
+    color: var(--text-muted);
     padding: 6px 16px;
     border-radius: 12px;
-    background: var(--theme-bg);
-    box-shadow: 0 0 10px var(--theme-glow);
-    text-shadow: 0 0 8px var(--theme-glow);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     letter-spacing: 0.05em;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: pulseTimer 1s infinite alternate;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    opacity: 0.5;
+}
+
+.rest-timer-display:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.06);
 }
 
 #rest-timer-text {
@@ -670,31 +676,69 @@ body {
 }
 
 .btn-timer-plus {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    color: var(--theme-color);
+    color: var(--text-muted);
     font-family: var(--font-sans);
     font-size: 0.85rem;
     font-weight: 700;
     padding: 8px 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: none;
-    box-shadow: 0 0 8px rgba(0, 242, 254, 0.1);
+    opacity: 0.5;
 }
 
 .btn-timer-plus:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-timer-plus:active {
+    transform: scale(0.95);
+}
+
+/* Running Active State */
+.rest-timer-container.active .rest-timer-display {
+    color: var(--theme-color);
+    background: var(--theme-bg);
+    border-color: transparent;
+    box-shadow: 0 0 10px var(--theme-glow);
+    text-shadow: 0 0 8px var(--theme-glow);
+    animation: pulseTimer 1s infinite alternate;
+    opacity: 1;
+}
+
+.rest-timer-container.active .btn-timer-plus {
+    color: var(--theme-color);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.1);
+    opacity: 1;
+}
+
+.rest-timer-container.active .btn-timer-plus:hover {
     background: rgba(255, 255, 255, 0.12);
     transform: translateY(-1px);
     box-shadow: 0 0 12px var(--theme-glow);
 }
 
-.btn-timer-plus:active {
-    transform: scale(0.95);
+.rest-timer-container.active .btn-timer-plus:active {
+    transform: scale(0.95) translateY(0);
+}
+
+/* Finished State */
+.rest-timer-display.finished {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.3) !important;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
+    animation: flashTimer 0.5s infinite alternate !important;
+    opacity: 1 !important;
 }
 
 .rest-timer-display.finished + .btn-timer-plus {

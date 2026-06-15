@@ -167,6 +167,20 @@
                     </button>
                 </footer>
 
+                <!-- Support Button Promotion -->
+                <div class="support-link-wrapper">
+                    <button class="btn-support-link" onclick="openSupportModal()">
+                        <svg class="icon-support" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+                            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+                            <line x1="6" y1="2" x2="6" y2="4"></line>
+                            <line x1="10" y1="2" x2="10" y2="4"></line>
+                            <line x1="14" y1="2" x2="14" y2="4"></line>
+                        </svg>
+                        <span>만든놈에게 한스쿱 보내기</span>
+                    </button>
+                </div>
+
                 <!-- Blog Link Promotion -->
                 <div class="blog-link-wrapper">
                     <a href="https://blog.naver.com/arikina04" target="_blank" rel="noopener noreferrer" class="btn-blog-link">
@@ -177,6 +191,25 @@
                         <span>만든놈 블로그 방문하기</span>
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Support Modal -->
+    <div id="support-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-emoji">🥛</span>
+                <h2>잠깐만요.</h2>
+            </div>
+            <div class="modal-body">
+                <p class="modal-p1">여기까지 눌러주신 마음만으로도 충분해요.</p>
+                <p class="modal-p2">그 마음은 주변의 어려운 이웃에게 전하시거나,</p>
+                <p class="modal-p2">오늘 운동한 스스로에게 단백질 한 스푼 선물해주세요.</p>
+                <p class="modal-highlight">오늘도 안전하게 득근하세요! 💪</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-close" onclick="closeSupportModal()">오늘도 득근하기 🏋️‍♂️</button>
             </div>
         </div>
     </div>

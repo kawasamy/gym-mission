@@ -1,0 +1,18 @@
+{
+  "name": "단백질 계산기 위젯",
+  "short_name": "단백질",
+  "description": "간편하고 세련된 단백질 계산기 위젯",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0e12",
+  "theme_color": "#0d0e12",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

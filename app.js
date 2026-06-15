@@ -162,9 +162,12 @@ function updateUI(triggerPop = true) {
     const weight = parseInt(weightInput.value, 10) || 70;
 
     // Calculate Thresholds
-    const threshold1 = weight * 1.2; // 오께이!
-    const threshold2 = weight * 1.4; // 굿! (🎯 권장)
-    const threshold3 = weight * 1.6; // 나이서! (⚡ 최적)
+    const threshold1 = weight * 1.2; // 1.2x
+    const threshold2 = weight * 1.4; // 1.4x (🎯 권장)
+    const threshold3 = weight * 1.6; // 1.6x (⚡ 최적)
+    const threshold4 = weight * 1.8; // 1.8x
+    const threshold5 = weight * 2.0; // 2.0x
+    const threshold6 = weight * 2.2; // 2.2x
 
     // Update target and max labels with calculated grams
     targetLabel.textContent = '🎯 권장 (1.4x) : ' + Math.round(threshold2) + 'g';
@@ -183,7 +186,13 @@ function updateUI(triggerPop = true) {
 
     // Determine status text
     let statusText = '충전 중';
-    if (totalProtein >= threshold3) {
+    if (totalProtein >= threshold6) {
+        statusText = '괴물!! 🦍';
+    } else if (totalProtein >= threshold5) {
+        statusText = '선 넘네? ⚠️';
+    } else if (totalProtein >= threshold4) {
+        statusText = '진심? 😎';
+    } else if (totalProtein >= threshold3) {
         statusText = '오늘 끝! 🎉';
     } else if (totalProtein >= threshold2) {
         statusText = '굿! 👍';
@@ -195,19 +204,24 @@ function updateUI(triggerPop = true) {
     statusMessage.textContent = statusText;
 
     // Apply color themes based on thresholds:
-    // - Below 1.2x (threshold1): Yellow
-    // - 1.2x to 1.4x (threshold2): Green
-    // - 1.4x to 1.6x (threshold3): Blue
-    // - Above 1.6x (threshold3): Purple
-    widgetContainer.classList.remove('theme-yellow', 'theme-green', 'theme-blue', 'theme-purple', 'theme-sets');
+    widgetContainer.classList.remove(
+        'theme-yellow', 'theme-green', 'theme-blue', 'theme-purple',
+        'theme-pink', 'theme-orange', 'theme-red', 'theme-sets'
+    );
     if (totalProtein < threshold1) {
         widgetContainer.classList.add('theme-yellow');
     } else if (totalProtein < threshold2) {
         widgetContainer.classList.add('theme-green');
     } else if (totalProtein < threshold3) {
         widgetContainer.classList.add('theme-blue');
-    } else {
+    } else if (totalProtein < threshold4) {
         widgetContainer.classList.add('theme-purple');
+    } else if (totalProtein < threshold5) {
+        widgetContainer.classList.add('theme-pink');
+    } else if (totalProtein < threshold6) {
+        widgetContainer.classList.add('theme-orange');
+    } else {
+        widgetContainer.classList.add('theme-red');
     }
 
     // Update target and max display with remaining (-) or exceeded (+) values

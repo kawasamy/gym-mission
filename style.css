@@ -251,6 +251,24 @@ body {
     --theme-bg: rgba(168, 85, 247, 0.15);
 }
 
+.widget-container.theme-pink {
+    --theme-color: #ff6b81; /* Pink */
+    --theme-glow: rgba(255, 107, 129, 0.35);
+    --theme-bg: rgba(255, 107, 129, 0.15);
+}
+
+.widget-container.theme-orange {
+    --theme-color: #ffa502; /* Orange */
+    --theme-glow: rgba(255, 165, 2, 0.35);
+    --theme-bg: rgba(255, 165, 2, 0.15);
+}
+
+.widget-container.theme-red {
+    --theme-color: #ff3838; /* Red */
+    --theme-glow: rgba(255, 56, 56, 0.4);
+    --theme-bg: rgba(255, 56, 56, 0.18);
+}
+
 /* Target Remaining Info Section */
 .target-info-container {
     background: rgba(255, 255, 255, 0.02);

@@ -5,6 +5,7 @@ let lastProtein = null; // Stores last protein state for Undo (되돌리기)
 let totalSets = 0; // Workout sets counter
 let activeTab = 'protein'; // Active tab ('protein' or 'workout')
 let defaultRestDuration = 120; // Default rest duration in seconds (2 minutes)
+let restTimerStartDuration = 120; // Active timer total duration (including +30s)
 let workoutStartTime = null; // Timestamp of first set added
 let stopwatchInterval = null; // Stopwatch ticking interval
 let lastSetTimestamp = null; // Timestamp of last completed set
@@ -331,8 +332,25 @@ function performReset() {
 
 // Workout Sets - Timer Variables
 const restTimerDisplay = document.getElementById('rest-timer');
+const restTimerTextDisplay = document.getElementById('rest-timer-text');
 let restTimerInterval = null;
 let restTimeRemaining = 120; // Starts at defaultRestDuration
+
+// Save and format rest duration (Option A)
+function saveRestDuration(seconds) {
+    if (seconds <= 0) return;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const formattedRest = mins > 0 ? mins + '분 ' + secs + '초' : secs + '초';
+    
+    lastRestDisplay.textContent = formattedRest;
+    lastRestContainer.style.display = 'flex';
+    localStorage.setItem('last_rest_formatted', formattedRest);
+    
+    // Record timestamp of this rest completion
+    lastSetTimestamp = Date.now();
+    localStorage.setItem('last_set_timestamp', lastSetTimestamp);
+}
 
 // Workout Sets - Adjust Sets
 function adjustSets(amount) {
@@ -341,6 +359,15 @@ function adjustSets(amount) {
     updateSetsUI(true);
     
     if (amount > 0) {
+        // If a timer was currently running, save its elapsed time before starting a new one
+        if (restTimerInterval) {
+            const elapsedMs = (restTimerStartDuration * 1000) - (restTimerEndTime - Date.now());
+            const elapsedSecs = Math.max(0, Math.floor(elapsedMs / 1000));
+            if (elapsedSecs > 2) {
+                saveRestDuration(elapsedSecs);
+            }
+        }
+        
         // Automatically start rest timer when a set is added (+1)
         startRestTimer();
         
@@ -350,28 +377,6 @@ function adjustSets(amount) {
             localStorage.setItem('workout_start_time', workoutStartTime);
             startStopwatch();
         }
-
-        // Calculate and show last rest duration
-        const now = Date.now();
-        if (lastSetTimestamp !== null) {
-            const diffMs = now - lastSetTimestamp;
-            const diffSecs = Math.floor(diffMs / 1000);
-            
-            // Only show if it is within reasonable rest duration (< 1 hour)
-            if (diffSecs < 3600) {
-                const mins = Math.floor(diffSecs / 60);
-                const secs = diffSecs % 60;
-                const formattedRest = mins > 0 ? mins + '분 ' + secs + '초' : secs + '초';
-                
-                lastRestDisplay.textContent = formattedRest;
-                lastRestContainer.style.display = 'flex';
-                localStorage.setItem('last_rest_formatted', formattedRest);
-            }
-        }
-        
-        // Record this set timestamp
-        lastSetTimestamp = now;
-        localStorage.setItem('last_set_timestamp', lastSetTimestamp);
     } else {
         // Cancel timer if a set is subtracted (-1)
         cancelRestTimer();
@@ -402,29 +407,15 @@ function updateSetsUI(triggerPop = true) {
     localStorage.setItem('workout_sets', totalSets);
 }
 
-// Debug Logger for Screen Wake Lock diagnostic (temporary)
-function showDebug(msg) {
-    const debugPanel = document.getElementById('debug-panel');
-    const debugMessage = document.getElementById('debug-message');
-    if (debugPanel && debugMessage) {
-        debugPanel.style.display = 'block';
-        debugMessage.textContent = msg;
-    }
-}
-
 // Screen Wake Lock API helpers (Hybrid: Standard WakeLock + Video Loop Fallback)
 async function requestWakeLock() {
-    showDebug('시도: 락 획득 요청 중...');
     if ('wakeLock' in navigator) {
         try {
             wakeLock = await navigator.wakeLock.request('screen');
-            showDebug('성공: 표준 WakeLock 활성화');
         } catch (err) {
-            showDebug('실패: 표준 락 에러 (' + err.name + ': ' + err.message + ') -> 비디오 우회 시도');
             requestVideoWakeLock();
         }
     } else {
-        showDebug('안내: 표준 WakeLock 미지원 (HTTP 사설 IP) -> 비디오 우회 시도');
         requestVideoWakeLock();
     }
 }
@@ -434,7 +425,6 @@ function releaseWakeLock() {
         wakeLock.release()
             .then(() => {
                 wakeLock = null;
-                showDebug('안내: 표준 WakeLock 해제됨');
             });
     }
     releaseVideoWakeLock();
@@ -442,13 +432,9 @@ function releaseWakeLock() {
 
 function requestVideoWakeLock() {
     if (wakeLockVideo) {
-        wakeLockVideo.play().then(() => {
-            showDebug('성공: 비디오 우회 락 활성화 (재생 중)');
-        }).catch(err => {
-            showDebug('실패: 비디오 재생 거부 (' + err.name + ': ' + err.message + ')');
+        wakeLockVideo.play().catch(err => {
+            console.log('Video Wake Lock failed:', err);
         });
-    } else {
-        showDebug('실패: 비디오 엘리먼트를 찾지 못함');
     }
 }
 
@@ -456,9 +442,8 @@ function releaseVideoWakeLock() {
     if (wakeLockVideo) {
         try {
             wakeLockVideo.pause();
-            showDebug('안내: 비디오 우회 락 해제됨');
         } catch (e) {
-            showDebug('오류: 비디오 정지 실패 (' + e.message + ')');
+            console.log('Video stop failed:', e);
         }
     }
 }
@@ -473,6 +458,11 @@ function startRestTimer(isResume = false) {
     if (!isResume) {
         restTimerEndTime = Date.now() + (defaultRestDuration * 1000);
         localStorage.setItem('rest_timer_end_time', restTimerEndTime);
+        restTimerStartDuration = defaultRestDuration;
+        localStorage.setItem('rest_timer_start_duration', restTimerStartDuration);
+    } else {
+        const savedStartDur = localStorage.getItem('rest_timer_start_duration');
+        restTimerStartDuration = savedStartDur ? parseInt(savedStartDur, 10) : defaultRestDuration;
     }
     
     const remainingMs = restTimerEndTime - Date.now();
@@ -492,6 +482,10 @@ function startRestTimer(isResume = false) {
             restTimerInterval = null;
             restTimerEndTime = null;
             localStorage.removeItem('rest_timer_end_time');
+            localStorage.removeItem('rest_timer_start_duration');
+            
+            // Save the completed rest duration
+            saveRestDuration(restTimerStartDuration);
             
             // Trigger haptics notification
             if (navigator.vibrate) {
@@ -502,7 +496,7 @@ function startRestTimer(isResume = false) {
             playTimerBeep();
             
             // Visual alert
-            restTimerDisplay.textContent = '준비 완료!';
+            restTimerTextDisplay.textContent = '준비 완료!';
             restTimerDisplay.classList.add('finished');
             
             // Auto-hide the "Ready!" notice after 10 seconds
@@ -524,13 +518,23 @@ function updateTimerText() {
     const secs = restTimeRemaining % 60;
     const formattedMins = mins < 10 ? '0' + mins : mins;
     const formattedSecs = secs < 10 ? '0' + secs : secs;
-    restTimerDisplay.textContent = formattedMins + ':' + formattedSecs;
+    restTimerTextDisplay.textContent = formattedMins + ':' + formattedSecs;
 }
 
 // Cancel / Skip active timer
 function handleTimerClick() {
-    if (restTimerInterval || restTimerDisplay.style.display !== 'none') {
+    if (restTimerInterval) {
+        // Timer was active, calculate elapsed time and save
+        const elapsedMs = (restTimerStartDuration * 1000) - (restTimerEndTime - Date.now());
+        const elapsedSecs = Math.max(0, Math.floor(elapsedMs / 1000));
+        if (elapsedSecs > 2) {
+            saveRestDuration(elapsedSecs);
+        }
         cancelRestTimer();
+    } else if (restTimerDisplay.classList.contains('finished')) {
+        // Timer was already finished ("준비 완료!" flashing), just hide it
+        restTimerDisplay.style.display = 'none';
+        restTimerDisplay.classList.remove('finished');
     }
 }
 
@@ -541,12 +545,43 @@ function cancelRestTimer() {
     }
     restTimerEndTime = null;
     localStorage.removeItem('rest_timer_end_time');
+    localStorage.removeItem('rest_timer_start_duration');
     
     restTimerDisplay.style.display = 'none';
     restTimerDisplay.classList.remove('finished');
     
     if (navigator.vibrate) {
         navigator.vibrate(30);
+    }
+}
+
+// Add 30 seconds to the current running rest timer
+function add30Seconds(event) {
+    if (event) event.stopPropagation(); // Prevent stopping the timer
+    
+    initAudioContext(); // Unlock audio
+    
+    if (restTimerInterval) {
+        restTimerEndTime += 30000;
+        restTimerStartDuration += 30;
+        localStorage.setItem('rest_timer_end_time', restTimerEndTime);
+        localStorage.setItem('rest_timer_start_duration', restTimerStartDuration);
+        
+        const remainingMs = restTimerEndTime - Date.now();
+        restTimeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
+        
+        updateTimerText();
+    } else {
+        // If timer is not running (e.g. finished/hidden), start a new one for 30s
+        restTimerStartDuration = 30;
+        restTimerEndTime = Date.now() + 30000;
+        localStorage.setItem('rest_timer_end_time', restTimerEndTime);
+        localStorage.setItem('rest_timer_start_duration', restTimerStartDuration);
+        startRestTimer(true);
+    }
+    
+    if (navigator.vibrate) {
+        navigator.vibrate(15);
     }
 }
 
@@ -562,6 +597,8 @@ function setTimerDuration(seconds) {
     if (restTimerInterval) {
         restTimerEndTime = Date.now() + (seconds * 1000);
         localStorage.setItem('rest_timer_end_time', restTimerEndTime);
+        restTimerStartDuration = seconds;
+        localStorage.setItem('rest_timer_start_duration', restTimerStartDuration);
         updateTimerText();
     }
     

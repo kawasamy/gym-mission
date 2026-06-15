@@ -1,7 +1,7 @@
 {
-  "name": "단백질 계산기 위젯",
-  "short_name": "단백질",
-  "description": "간편하고 세련된 단백질 계산기 위젯",
+  "name": "오단완 - 단백질 & 세트 카운터",
+  "short_name": "오단완",
+  "description": "오늘 단백질 완료! 간편하고 세련된 헬스 헬퍼",
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",

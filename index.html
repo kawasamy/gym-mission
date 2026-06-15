@@ -8,7 +8,7 @@
     <!-- iOS PWA settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="단백질 계산기">
+    <meta name="apple-mobile-web-app-title" content="오단완">
     <link rel="apple-touch-icon" href="icon.png">
     
     <!-- Manifest & Theme -->
@@ -31,137 +31,137 @@
             <button class="tab-btn" id="btn-tab-workout" onclick="switchTab('workout')">🏋️ 세트</button>
         </div>
 
-        <!-- Protein Tab View -->
-        <div id="view-protein" class="tab-view active">
-            <header class="widget-header">
-                <h1>단백질 계산기</h1>
-                <div class="weight-settings">
-                    <input type="number" id="weight-input" placeholder="몸무게" value="80" inputmode="numeric">
-                    <span class="weight-unit">kg</span>
-                </div>
-            </header>
+        <div class="tab-views-wrapper">
+            <!-- Protein Tab View -->
+            <div id="view-protein" class="tab-view active">
+                <header class="widget-header">
+                    <h1>단백질 계산기</h1>
+                    <div class="weight-settings">
+                        <input type="number" id="weight-input" placeholder="몸무게" value="80" inputmode="numeric">
+                        <span class="weight-unit">kg</span>
+                    </div>
+                </header>
 
-            <!-- Progress Area -->
-            <div class="progress-section">
-                <svg class="progress-ring" width="180" height="180">
-                    <defs>
-                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="8" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
-                    </defs>
-                    <circle class="progress-ring-bg" cx="90" cy="90" r="76" />
-                    <circle class="progress-ring-bar" cx="90" cy="90" r="76" />
-                </svg>
-                <div class="counter-display">
-                    <span id="protein-total" class="total-number">0</span>
-                    <span class="unit">g</span>
-                    <span id="status-message" class="status-message">대기 중</span>
-                </div>
-            </div>
-
-            <!-- Target Info Section -->
-            <div class="target-info-container">
-                <div class="info-row">
-                    <span class="info-label" id="target-label">🎯 권장 (1.4x)</span>
-                    <span id="target-remaining" class="info-value">권장까지 -0g</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label" id="max-label">⚡ 최적 (1.6x)</span>
-                    <span id="max-remaining" class="info-value">최적까지 -0g</span>
-                </div>
-            </div>
-
-            <!-- Quick Add Section -->
-            <div class="quick-add-grid">
-                <button class="btn-quick btn-neg" onclick="addProtein(-10)">-10g</button>
-                <button class="btn-quick btn-neg" onclick="addProtein(-5)">-5g</button>
-                <button class="btn-quick btn-neg" onclick="addProtein(-1)">-1g</button>
-                <button class="btn-quick" onclick="addProtein(1)">+1g</button>
-                <button class="btn-quick" onclick="addProtein(5)">+5g</button>
-                <button class="btn-quick" onclick="addProtein(10)">+10g</button>
-            </div>
-
-            <!-- Custom Add Input & Action Section -->
-            <div class="input-section">
-                <input type="number" id="custom-amount" placeholder="직접 입력 (g)" inputmode="numeric" min="1" max="500">
-                <button class="btn-primary" onclick="addCustomProtein()">추가</button>
-            </div>
-
-            <!-- Reset & Undo Footer -->
-            <footer class="widget-footer">
-                <button class="btn-undo" id="btn-undo" onclick="undoProtein()" disabled>
-                    <svg class="icon-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 7v6h6"></path>
-                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                <!-- Progress Area -->
+                <div class="progress-section">
+                    <svg class="progress-ring" width="180" height="180">
+                        <defs>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="8" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <circle class="progress-ring-bg" cx="90" cy="90" r="76" />
+                        <circle class="progress-ring-bar" cx="90" cy="90" r="76" />
                     </svg>
-                    <span>되돌리기</span>
-                </button>
-                <button class="btn-reset" id="btn-reset" onclick="confirmReset()">
-                    <svg class="icon-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                        <path d="M3 3v5h5"></path>
-                    </svg>
-                    <span>초기화</span>
-                </button>
-            </footer>
-        </div>
-
-        <!-- Workout Tab View -->
-        <div id="view-workout" class="tab-view">
-            <header class="widget-header">
-                <h1>운동 세트</h1>
-                <div class="stopwatch-container">
-                    <span class="stopwatch-icon">⏱️</span>
-                    <span id="stopwatch-display" class="stopwatch-time">00:00</span>
-                </div>
-            </header>
-
-            <!-- Workout Sets Display -->
-            <div class="progress-section">
-                <div class="sets-circle">
-                    <div class="sets-counter-display">
-                        <span id="sets-total" class="sets-number">0</span>
-                        <span class="sets-unit">SETS</span>
-                        <span id="rest-timer" class="rest-timer-display" onclick="handleTimerClick()" style="display: none;">02:00</span>
+                    <div class="counter-display">
+                        <span id="protein-total" class="total-number">0</span>
+                        <span class="unit">g</span>
+                        <span id="status-message" class="status-message">대기 중</span>
                     </div>
                 </div>
+
+                <!-- Target Info Section -->
+                <div class="target-info-container">
+                    <div class="info-row">
+                        <span class="info-label" id="target-label">🎯 권장 (1.4x)</span>
+                        <span id="target-remaining" class="info-value">권장까지 -0g</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" id="max-label">⚡ 최적 (1.6x)</span>
+                        <span id="max-remaining" class="info-value">최적까지 -0g</span>
+                    </div>
+                </div>
+
+                <!-- Quick Add Section -->
+                <div class="quick-add-grid">
+                    <button class="btn-quick btn-neg" onclick="addProtein(-10)">-10g</button>
+                    <button class="btn-quick btn-neg" onclick="addProtein(-5)">-5g</button>
+                    <button class="btn-quick btn-neg" onclick="addProtein(-1)">-1g</button>
+                    <button class="btn-quick" onclick="addProtein(1)">+1g</button>
+                    <button class="btn-quick" onclick="addProtein(5)">+5g</button>
+                    <button class="btn-quick" onclick="addProtein(10)">+10g</button>
+                </div>
+
+                <!-- Custom Add Input & Action Section -->
+                <div class="input-section">
+                    <input type="number" id="custom-amount" placeholder="직접 입력 (g)" inputmode="numeric" min="1" max="500">
+                    <button class="btn-primary" onclick="addCustomProtein()">추가</button>
+                </div>
+
+                <!-- Reset & Undo Footer -->
+                <footer class="widget-footer">
+                    <button class="btn-undo" id="btn-undo" onclick="undoProtein()" disabled>
+                        <svg class="icon-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7v6h6"></path>
+                            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                        </svg>
+                        <span>되돌리기</span>
+                    </button>
+                    <button class="btn-reset" id="btn-reset" onclick="confirmReset()">
+                        <svg class="icon-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        <span>초기화</span>
+                    </button>
+                </footer>
             </div>
 
-            <!-- Last Rest Duration Display -->
-            <div id="last-rest-container" class="last-rest-container" style="display: none;">
-                <span class="last-rest-label">이전 휴식</span>
-                <span id="last-rest-time" class="last-rest-value">-</span>
-            </div>
+            <!-- Workout Tab View -->
+            <div id="view-workout" class="tab-view">
+                <header class="widget-header">
+                    <h1>운동 세트</h1>
+                    <div class="stopwatch-container">
+                        <span class="stopwatch-icon">⏱️</span>
+                        <span id="stopwatch-display" class="stopwatch-time">00:00</span>
+                    </div>
+                </header>
 
-            <!-- Timer Duration Presets -->
-            <div class="timer-presets">
-                <button class="btn-preset-time" onclick="setTimerDuration(90)">1:30</button>
-                <button class="btn-preset-time active" onclick="setTimerDuration(120)">2:00</button>
-                <button class="btn-preset-time" onclick="setTimerDuration(150)">2:30</button>
-                <button class="btn-preset-time" onclick="setTimerDuration(180)">3:00</button>
-            </div>
+                <!-- Workout Sets Display -->
+                <div class="progress-section">
+                    <div class="sets-circle">
+                        <div class="sets-counter-display">
+                            <span id="sets-total" class="sets-number">0</span>
+                            <span class="sets-unit">SETS</span>
+                            <div id="rest-timer" class="rest-timer-display" style="display: none;">
+                                <span id="rest-timer-text" onclick="handleTimerClick()">02:00</span>
+                                <button id="btn-timer-plus30" class="btn-timer-plus" onclick="add30Seconds(event)">+30s</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Sets Controls Section -->
-            <div class="quick-add-grid sets-controls">
-                <button class="btn-quick btn-neg" onclick="adjustSets(-1)">-1 세트</button>
-                <button class="btn-quick btn-sets-add" onclick="adjustSets(1)">+1 세트</button>
-            </div>
+                <!-- Last Rest Duration Display -->
+                <div id="last-rest-container" class="last-rest-container" style="display: none;">
+                    <span class="last-rest-label">이전 휴식</span>
+                    <span id="last-rest-time" class="last-rest-value">-</span>
+                </div>
 
-            <!-- Reset Footer -->
-            <footer class="widget-footer">
-                <button class="btn-reset" id="btn-reset-sets" onclick="confirmResetSets()">
-                    <svg class="icon-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                        <path d="M3 3v5h5"></path>
-                    </svg>
-                    <span>초기화</span>
-                </button>
-            </footer>
+                <!-- Timer Duration Presets -->
+                <div class="timer-presets">
+                    <button class="btn-preset-time" onclick="setTimerDuration(90)">1:30</button>
+                    <button class="btn-preset-time active" onclick="setTimerDuration(120)">2:00</button>
+                    <button class="btn-preset-time" onclick="setTimerDuration(150)">2:30</button>
+                    <button class="btn-preset-time" onclick="setTimerDuration(180)">3:00</button>
+                </div>
 
-            <!-- 임시 디버그 패널 (원인 확인용) -->
-            <div id="debug-panel" style="font-size: 0.75rem; color: #fca5a5; text-align: center; margin-top: 15px; padding: 10px; background: rgba(239, 68, 68, 0.15); border: 1px dashed rgba(239, 68, 68, 0.4); border-radius: 12px; display: none; word-break: break-all; z-index: 10; font-family: monospace;">
-                🚨 진단: <span id="debug-message">대기 중</span>
+                <!-- Sets Controls Section -->
+                <div class="quick-add-grid sets-controls">
+                    <button class="btn-quick btn-neg" onclick="adjustSets(-1)">-1 세트</button>
+                    <button class="btn-quick btn-sets-add" onclick="adjustSets(1)">+1 세트</button>
+                </div>
+
+                <!-- Reset Footer -->
+                <footer class="widget-footer">
+                    <button class="btn-reset" id="btn-reset-sets" onclick="confirmResetSets()">
+                        <svg class="icon-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        <span>초기화</span>
+                    </button>
+                </footer>
             </div>
         </div>
     </div>

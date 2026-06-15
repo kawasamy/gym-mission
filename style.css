@@ -393,7 +393,7 @@ body {
 .widget-footer {
     display: flex;
     justify-content: center;
-    margin-top: 4px;
+    margin-top: auto;
     z-index: 1;
 }
 
@@ -492,14 +492,29 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.tab-views-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    flex: 1;
+    z-index: 1;
+}
+
 .tab-view {
-    display: none;
+    grid-area: 1 / 1 / 2 / 2;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 .tab-view.active {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Undo Button */
@@ -630,7 +645,7 @@ body {
     font-weight: 700;
     color: var(--theme-color);
     margin-top: 6px;
-    padding: 4px 14px; /* Increased touch padding */
+    padding: 4px 10px;
     border-radius: 8px;
     background: var(--theme-bg);
     box-shadow: 0 0 10px var(--theme-glow);
@@ -639,10 +654,46 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
     animation: pulseTimer 1s infinite alternate;
     z-index: 10; /* Bring to front for touch */
-    cursor: pointer; /* Pointer only on the timer itself */
+}
+
+#rest-timer-text {
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.btn-timer-plus {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--theme-color);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    margin-left: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.btn-timer-plus:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-timer-plus:active {
+    transform: scale(0.95);
+}
+
+.rest-timer-display.finished .btn-timer-plus {
+    display: none;
 }
 
 @keyframes pulseTimer {

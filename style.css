@@ -505,7 +505,6 @@ body {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -639,14 +638,23 @@ body {
     --theme-bg: rgba(0, 242, 254, 0.08);
 }
 
+.rest-timer-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: -10px 0 10px 0;
+    z-index: 1;
+    height: 38px;
+}
+
 /* Rest Timer Display */
 .rest-timer-display {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--theme-color);
-    margin-top: 6px;
-    padding: 4px 10px;
-    border-radius: 8px;
+    padding: 6px 16px;
+    border-radius: 12px;
     background: var(--theme-bg);
     box-shadow: 0 0 10px var(--theme-glow);
     text-shadow: 0 0 8px var(--theme-glow);
@@ -654,45 +662,42 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     animation: pulseTimer 1s infinite alternate;
-    z-index: 10; /* Bring to front for touch */
 }
 
 #rest-timer-text {
     cursor: pointer;
-    padding: 4px 6px;
 }
 
 .btn-timer-plus {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 12px;
     color: var(--theme-color);
     font-family: var(--font-sans);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    padding: 2px 6px;
-    margin-left: 2px;
+    padding: 8px 14px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     text-shadow: none;
-    box-shadow: none;
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.1);
 }
 
 .btn-timer-plus:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px var(--theme-glow);
 }
 
 .btn-timer-plus:active {
     transform: scale(0.95);
 }
 
-.rest-timer-display.finished .btn-timer-plus {
+.rest-timer-display.finished + .btn-timer-plus {
     display: none;
 }
 

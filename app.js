@@ -331,6 +331,7 @@ function performReset() {
 }
 
 // Workout Sets - Timer Variables
+const restTimerContainer = document.getElementById('rest-timer-container');
 const restTimerDisplay = document.getElementById('rest-timer');
 const restTimerTextDisplay = document.getElementById('rest-timer-text');
 let restTimerInterval = null;
@@ -468,13 +469,18 @@ function startRestTimer(isResume = false) {
     const remainingMs = restTimerEndTime - Date.now();
     restTimeRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
     
-    restTimerDisplay.style.display = 'flex';
+    restTimerContainer.style.display = 'flex';
     restTimerDisplay.classList.remove('finished');
     updateTimerText();
     
     restTimerInterval = setInterval(() => {
         const currentMs = restTimerEndTime - Date.now();
         restTimeRemaining = Math.max(0, Math.ceil(currentMs / 1000));
+        
+        // Keep AudioContext active on iOS Safari by playing a silent vibration note every 15 seconds
+        if (restTimeRemaining > 0 && restTimeRemaining % 15 === 0) {
+            keepAudioContextAlive();
+        }
         
         if (currentMs <= 0) {
             // Timer Finished
@@ -502,7 +508,7 @@ function startRestTimer(isResume = false) {
             // Auto-hide the "Ready!" notice after 10 seconds
             setTimeout(() => {
                 if (restTimerDisplay.classList.contains('finished')) {
-                    restTimerDisplay.style.display = 'none';
+                    restTimerContainer.style.display = 'none';
                     restTimerDisplay.classList.remove('finished');
                 }
             }, 10000);
@@ -533,7 +539,7 @@ function handleTimerClick() {
         cancelRestTimer();
     } else if (restTimerDisplay.classList.contains('finished')) {
         // Timer was already finished ("준비 완료!" flashing), just hide it
-        restTimerDisplay.style.display = 'none';
+        restTimerContainer.style.display = 'none';
         restTimerDisplay.classList.remove('finished');
     }
 }
@@ -547,7 +553,7 @@ function cancelRestTimer() {
     localStorage.removeItem('rest_timer_end_time');
     localStorage.removeItem('rest_timer_start_duration');
     
-    restTimerDisplay.style.display = 'none';
+    restTimerContainer.style.display = 'none';
     restTimerDisplay.classList.remove('finished');
     
     if (navigator.vibrate) {
@@ -639,6 +645,29 @@ function handleUserInteraction() {
 // Add touch/click listeners to unlock audio and wake lock
 window.addEventListener('click', handleUserInteraction, { once: false });
 window.addEventListener('touchstart', handleUserInteraction, { once: false });
+
+// Keep AudioContext alive on iOS Safari by playing an imperceptible silent vibration note
+function keepAudioContextAlive() {
+    try {
+        initAudioContext();
+        if (!audioCtx || audioCtx.state !== 'running') return;
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.value = 1; // 1 Hz (infrasonic, completely silent)
+        gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime); // Extremely quiet
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {
+        console.log('Audio keepalive failed:', e);
+    }
+}
 
 // Play soft electronic beep dynamically via Web Audio API
 function playTimerBeep() {

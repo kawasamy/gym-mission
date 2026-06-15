@@ -111,7 +111,7 @@
             <!-- Workout Tab View -->
             <div id="view-workout" class="tab-view">
                 <header class="widget-header">
-                    <h1>운동 세트</h1>
+                    <h1>세트 카운터</h1>
                     <div class="stopwatch-container">
                         <span class="stopwatch-icon">⏱️</span>
                         <span id="stopwatch-display" class="stopwatch-time">00:00</span>
@@ -124,12 +124,16 @@
                         <div class="sets-counter-display">
                             <span id="sets-total" class="sets-number">0</span>
                             <span class="sets-unit">SETS</span>
-                            <div id="rest-timer" class="rest-timer-display" style="display: none;">
-                                <span id="rest-timer-text" onclick="handleTimerClick()">02:00</span>
-                                <button id="btn-timer-plus30" class="btn-timer-plus" onclick="add30Seconds(event)">+30s</button>
-                            </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Active Rest Timer Display (Moved below circle) -->
+                <div id="rest-timer-container" class="rest-timer-container" style="display: none;">
+                    <div id="rest-timer" class="rest-timer-display">
+                        <span id="rest-timer-text" onclick="handleTimerClick()">02:00</span>
+                    </div>
+                    <button id="btn-timer-plus30" class="btn-timer-plus" onclick="add30Seconds(event)">+30s</button>
                 </div>
 
                 <!-- Last Rest Duration Display -->

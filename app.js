@@ -510,7 +510,6 @@ function startRestTimer(isResume = false) {
             // Timer Finished
             clearInterval(restTimerInterval);
             restTimerInterval = null;
-            updateWakeLockState();
             restTimerEndTime = null;
             localStorage.removeItem('rest_timer_end_time');
             localStorage.removeItem('rest_timer_start_duration');
@@ -525,6 +524,11 @@ function startRestTimer(isResume = false) {
             
             // Play physical beep sound using Web Audio API (zero dependencies)
             playTimerBeep();
+            
+            // Delay releasing wake lock & suspending AudioContext by 1.5 seconds to let the alarm beep play out
+            setTimeout(() => {
+                updateWakeLockState();
+            }, 1500);
             
             // Visual alert
             restTimerTextDisplay.textContent = '준비 완료!';
@@ -744,16 +748,16 @@ function playWebAudioBeepFallback() {
 // Play electronic beep using HTML5 Audio (WAV blob) to mix with background music apps on iOS
 function playTimerBeep() {
     try {
-        // 8000Hz sample rate, 8-bit mono audio
-        const sampleRate = 8000;
+        // 44100Hz sample rate, 8-bit mono audio for clean high-frequency sound without aliasing
+        const sampleRate = 44100;
         
         // Define triple beep pattern:
-        // Beep 1: 0.08s (640 samples)
-        // Silence 1: 0.04s (320 samples)
-        // Beep 2: 0.08s (640 samples)
-        // Silence 2: 0.04s (320 samples)
-        // Beep 3: 0.16s (1280 samples)
-        // Total duration: 0.40s (3200 samples)
+        // Beep 1: 0.08s (3528 samples)
+        // Silence 1: 0.04s (1764 samples)
+        // Beep 2: 0.08s (3528 samples)
+        // Silence 2: 0.04s (1764 samples)
+        // Beep 3: 0.16s (7056 samples)
+        // Total duration: 0.40s (17640 samples)
         const duration = 0.40;
         const numSamples = sampleRate * duration;
         const buffer = new Uint8Array(44 + numSamples);

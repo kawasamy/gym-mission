@@ -1047,17 +1047,4 @@ document.addEventListener('visibilitychange', async () => {
     }
 });
 
-// Support Modal Functions
-function openSupportModal() {
-    const modal = document.getElementById('support-modal');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
 
-function closeSupportModal() {
-    const modal = document.getElementById('support-modal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}

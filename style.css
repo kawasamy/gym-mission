@@ -511,19 +511,27 @@ body {
 }
 
 .tab-views-wrapper {
-    display: block;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
     flex: 1;
     z-index: 1;
 }
 
 .tab-view {
-    display: none;
+    grid-area: 1 / 1 / 2 / 2;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 .tab-view.active {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Undo Button */
@@ -965,169 +973,7 @@ body {
     transform: scale(0.96);
 }
 
-/* Support/Donation Link */
-.support-link-wrapper {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0 0 0;
-    z-index: 1;
-}
-
-.btn-support-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 14px;
-    padding: 8px 16px;
-    color: var(--text-muted);
-    font-family: var(--font-sans);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.btn-support-link span {
-    letter-spacing: -0.01em;
-}
-
-.icon-support {
-    width: 14px;
-    height: 14px;
-    color: var(--theme-color);
-}
-
-.btn-support-link:hover {
-    background: var(--theme-bg);
-    border-color: var(--theme-color);
-    color: var(--text-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 0 10px var(--theme-glow);
-}
-
-.btn-support-link:active {
-    transform: scale(0.96);
-}
-
-/* Custom Support Modal */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(10, 11, 14, 0.65);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s;
-}
-
-.modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.modal-content {
-    background: rgba(20, 22, 28, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 28px;
-    padding: 28px 24px;
-    max-width: 320px;
-    width: 85%;
-    text-align: center;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7),
-                0 0 40px rgba(56, 189, 248, 0.1);
-    transform: translateY(15px) scale(0.96);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-}
-
-.modal-overlay.active .modal-content {
-    transform: translateY(0) scale(1);
-}
-
-.modal-header {
-    margin-bottom: 16px;
-}
-
-.modal-emoji {
-    font-size: 2.2rem;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.modal-header h2 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-}
-
-.modal-body {
-    margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.modal-body p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    word-break: keep-all;
-    letter-spacing: -0.01em;
-}
-
-.modal-p1 {
-    font-weight: 600;
-    color: var(--text-primary) !important;
-}
-
-.modal-p2 {
-    color: var(--text-muted);
-}
-
-.modal-highlight {
-    font-size: 0.95rem !important;
-    font-weight: 700;
-    color: var(--theme-color) !important;
-    text-shadow: 0 0 10px var(--theme-glow);
-    margin-top: 6px;
-}
-
-.btn-modal-close {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 16px;
-    background: var(--theme-color);
-    color: #0a0b0e;
-    font-family: var(--font-sans);
-    font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 14px var(--theme-glow);
-}
-
-.btn-modal-close:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px var(--theme-glow);
-}
-
-.btn-modal-close:active {
-    transform: scale(0.97);
-}
+/* Custom support styles removed */
 
 @keyframes pulseStartBtn {
     from {

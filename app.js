@@ -458,6 +458,9 @@ function releaseWakeLock() {
 
 function requestVideoWakeLock() {
     if (wakeLockVideo) {
+        if (!wakeLockVideo.src || wakeLockVideo.src === window.location.href || wakeLockVideo.src === "") {
+            wakeLockVideo.src = "data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAAh3aWRlAAAAF21kYXTaAYCAgCBQbGf/gBtAYCAgA==";
+        }
         wakeLockVideo.play().catch(err => {
             console.log('Video Wake Lock failed:', err);
         });
@@ -468,6 +471,8 @@ function releaseVideoWakeLock() {
     if (wakeLockVideo) {
         try {
             wakeLockVideo.pause();
+            wakeLockVideo.removeAttribute('src'); // Completely remove src attribute
+            wakeLockVideo.load(); // Force browser to clear the active media player thread
         } catch (e) {
             console.log('Video stop failed:', e);
         }

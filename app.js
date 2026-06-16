@@ -509,7 +509,6 @@ function startRestTimer(isResume = false) {
     restTimerContainer.classList.add('active');
     restTimerDisplay.classList.remove('finished');
     updateTimerText();
-    updateWakeLockState();
     
     restTimerInterval = setInterval(() => {
         const currentMs = restTimerEndTime - Date.now();
@@ -554,6 +553,8 @@ function startRestTimer(isResume = false) {
             updateTimerText();
         }
     }, 1000);
+    
+    updateWakeLockState();
 }
 
 // Format and update timer countdown text
@@ -971,6 +972,8 @@ function handleStopwatchClick() {
                 clearInterval(stopwatchInterval);
                 stopwatchInterval = null;
             }
+            updateWakeLockState(); // Update screen lock state to release it when paused
+            
             stopwatchContainer.classList.remove('running');
             stopwatchContainer.classList.add('paused');
             

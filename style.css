@@ -511,27 +511,19 @@ body {
 }
 
 .tab-views-wrapper {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
+    display: block;
     flex: 1;
     z-index: 1;
 }
 
 .tab-view {
-    grid-area: 1 / 1 / 2 / 2;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 20px;
 }
 
 .tab-view.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+    display: flex;
 }
 
 /* Undo Button */

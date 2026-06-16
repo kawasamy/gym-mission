@@ -37,6 +37,7 @@ const stopwatchContainer = document.querySelector('.stopwatch-container');
 const lastRestContainer = document.getElementById('last-rest-container');
 const lastRestDisplay = document.getElementById('last-rest-time');
 const wakeLockVideo = document.getElementById('wake-lock-video');
+const startWorkoutWrapper = document.getElementById('start-workout-wrapper');
 
 // Calculate Circle Properties
 const CIRCLE_RADIUS = 76;
@@ -108,6 +109,9 @@ function init() {
     if (savedStartTime !== null) {
         workoutStartTime = parseInt(savedStartTime, 10);
         startStopwatch();
+        if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'none';
+    } else {
+        if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'flex';
     }
 
     // Load Last Set Timestamp & Formatted Rest Time
@@ -698,8 +702,8 @@ function keepAudioContextAlive() {
     }
 }
 
-// Play soft electronic beep dynamically via Web Audio API
-function playTimerBeep() {
+// Play soft electronic beep dynamically via Web Audio API (Fallback)
+function playWebAudioBeepFallback() {
     try {
         initAudioContext();
         if (!audioCtx) return;
@@ -718,7 +722,113 @@ function playTimerBeep() {
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.3);
     } catch (e) {
-        console.log('Audio Context blocked or not supported:', e);
+        console.log('Web Audio fallback beep failed:', e);
+    }
+}
+
+// Play electronic beep using HTML5 Audio (WAV blob) to mix with background music apps on iOS
+function playTimerBeep() {
+    try {
+        // 8000Hz sample rate, 8-bit mono audio
+        const sampleRate = 8000;
+        
+        // Define triple beep pattern:
+        // Beep 1: 0.08s (640 samples)
+        // Silence 1: 0.04s (320 samples)
+        // Beep 2: 0.08s (640 samples)
+        // Silence 2: 0.04s (320 samples)
+        // Beep 3: 0.16s (1280 samples)
+        // Total duration: 0.40s (3200 samples)
+        const duration = 0.40;
+        const numSamples = sampleRate * duration;
+        const buffer = new Uint8Array(44 + numSamples);
+        
+        // 1. Write RIFF WAV Header
+        buffer[0] = 0x52; buffer[1] = 0x49; buffer[2] = 0x46; buffer[3] = 0x46; // "RIFF"
+        const fileSize = 36 + numSamples;
+        buffer[4] = fileSize & 0xff;
+        buffer[5] = (fileSize >> 8) & 0xff;
+        buffer[6] = (fileSize >> 16) & 0xff;
+        buffer[7] = (fileSize >> 24) & 0xff;
+        buffer[8] = 0x57; buffer[9] = 0x41; buffer[10] = 0x56; buffer[11] = 0x45; // "WAVE"
+        buffer[12] = 0x66; buffer[13] = 0x6d; buffer[14] = 0x74; buffer[15] = 0x20; // "fmt "
+        buffer[16] = 16; buffer[17] = 0; buffer[18] = 0; buffer[19] = 0; // Chunk size (16)
+        buffer[20] = 1; buffer[21] = 0; // PCM format (1)
+        buffer[22] = 1; buffer[23] = 0; // Channels (1 = Mono)
+        buffer[24] = sampleRate & 0xff;
+        buffer[25] = (sampleRate >> 8) & 0xff;
+        buffer[26] = (sampleRate >> 16) & 0xff;
+        buffer[27] = (sampleRate >> 24) & 0xff; // Sample rate (8000)
+        buffer[28] = sampleRate & 0xff;
+        buffer[29] = (sampleRate >> 8) & 0xff;
+        buffer[30] = (sampleRate >> 16) & 0xff;
+        buffer[31] = (sampleRate >> 24) & 0xff; // Byte rate (8000)
+        buffer[32] = 1; buffer[33] = 0; // Block align (1)
+        buffer[34] = 8; buffer[35] = 0; // Bits per sample (8)
+        buffer[36] = 0x64; buffer[37] = 0x61; buffer[38] = 0x74; buffer[39] = 0x61; // "data"
+        buffer[40] = numSamples & 0xff;
+        buffer[41] = (numSamples >> 8) & 0xff;
+        buffer[42] = (numSamples >> 16) & 0xff;
+        buffer[43] = (numSamples >> 24) & 0xff; // Data size
+        
+        // 2. Generate Audio Data (1500Hz Sine Wave in Triple Beep Pattern)
+        const frequency = 1500; // Ultra high-pitched tone to pierce background music
+        for (let i = 0; i < numSamples; i++) {
+            const sampleTime = i / sampleRate;
+            let isPlaying = false;
+            let currentBeepProgress = 0;
+            let currentBeepDuration = 0;
+            
+            // Beep sections check
+            if (sampleTime >= 0 && sampleTime < 0.08) {
+                isPlaying = true;
+                currentBeepProgress = sampleTime;
+                currentBeepDuration = 0.08;
+            } else if (sampleTime >= 0.12 && sampleTime < 0.20) {
+                isPlaying = true;
+                currentBeepProgress = sampleTime - 0.12;
+                currentBeepDuration = 0.08;
+            } else if (sampleTime >= 0.24 && sampleTime < 0.40) {
+                isPlaying = true;
+                currentBeepProgress = sampleTime - 0.24;
+                currentBeepDuration = 0.16;
+            }
+            
+            if (isPlaying) {
+                const t = i / sampleRate;
+                let sine = Math.sin(2 * Math.PI * frequency * t);
+                
+                // Fade out at the end of each sub-beep (0.015s) to prevent clicking noises
+                const fadeOutTime = 0.015;
+                const timeRemaining = currentBeepDuration - currentBeepProgress;
+                const fadeRatio = Math.min(1, timeRemaining / fadeOutTime);
+                sine = sine * fadeRatio;
+                
+                // Maximize amplitude to 127 for full volume
+                const sampleValue = Math.round((sine + 1) * 127);
+                buffer[44 + i] = sampleValue;
+            } else {
+                buffer[44 + i] = 128; // 8-bit silent center value
+            }
+        }
+        
+        // 3. Play via HTML5 Audio
+        const blob = new Blob([buffer], { type: 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        
+        audio.volume = 1.0; // MAX Volume!
+        audio.play().then(() => {
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 1000);
+        }).catch(err => {
+            console.log('HTML5 Audio play failed, falling back:', err);
+            playWebAudioBeepFallback();
+        });
+    } catch (e) {
+        console.log('WAV generation failed, falling back:', e);
+        playWebAudioBeepFallback();
     }
 }
 
@@ -784,6 +894,7 @@ function startStopwatch() {
     requestWakeLock();
     
     stopwatchContainer.classList.add('running');
+    if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'none';
     updateStopwatchText();
     stopwatchInterval = setInterval(updateStopwatchText, 1000);
 }
@@ -799,7 +910,20 @@ function stopStopwatch() {
     releaseWakeLock();
     
     stopwatchContainer.classList.remove('running');
+    if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'flex';
     stopwatchDisplay.textContent = '00:00';
+}
+
+// Manually start the workout session (Stopwatch) without adding a set
+function startWorkoutManually() {
+    if (workoutStartTime === null) {
+        workoutStartTime = Date.now();
+        localStorage.setItem('workout_start_time', workoutStartTime);
+        startStopwatch();
+        if (navigator.vibrate) {
+            navigator.vibrate([30, 50, 30]);
+        }
+    }
 }
 
 // Workout Stopwatch - Update Text (formats HH:MM:SS or MM:SS)

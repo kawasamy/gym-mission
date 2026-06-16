@@ -474,6 +474,18 @@ function releaseVideoWakeLock() {
     }
 }
 
+// Dynamically request or release screen Wake Lock based on running status
+function updateWakeLockState() {
+    const isStopwatchRunning = (stopwatchInterval !== null);
+    const isRestTimerRunning = (restTimerInterval !== null);
+    
+    if (isStopwatchRunning || isRestTimerRunning) {
+        requestWakeLock();
+    } else {
+        releaseWakeLock();
+    }
+}
+
 // Workout Sets - Start Rest Timer
 function startRestTimer(isResume = false) {
     // Clear any running timer first
@@ -497,6 +509,7 @@ function startRestTimer(isResume = false) {
     restTimerContainer.classList.add('active');
     restTimerDisplay.classList.remove('finished');
     updateTimerText();
+    updateWakeLockState();
     
     restTimerInterval = setInterval(() => {
         const currentMs = restTimerEndTime - Date.now();
@@ -511,6 +524,7 @@ function startRestTimer(isResume = false) {
             // Timer Finished
             clearInterval(restTimerInterval);
             restTimerInterval = null;
+            updateWakeLockState();
             restTimerEndTime = null;
             localStorage.removeItem('rest_timer_end_time');
             localStorage.removeItem('rest_timer_start_duration');
@@ -576,6 +590,7 @@ function cancelRestTimer() {
         clearInterval(restTimerInterval);
         restTimerInterval = null;
     }
+    updateWakeLockState();
     restTimerEndTime = null;
     localStorage.removeItem('rest_timer_end_time');
     localStorage.removeItem('rest_timer_start_duration');
@@ -672,9 +687,7 @@ function initAudioContext() {
 // Handle user interaction to unlock audio and reinforce Wake Lock (iOS Safari requirement)
 function handleUserInteraction() {
     initAudioContext();
-    if (workoutStartTime !== null) {
-        requestWakeLock();
-    }
+    updateWakeLockState();
 }
 
 // Add touch/click listeners to unlock audio and wake lock
@@ -717,7 +730,7 @@ function playWebAudioBeepFallback() {
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             
-            osc.type = 'sine';
+            osc.type = 'square'; // Square wave for maximum piercing loudness
             osc.frequency.setValueAtTime(1500, startTime); // High pitch (1500Hz)
             
             // Set high volume (0.8) and fade out towards the end to prevent clicking
@@ -810,16 +823,17 @@ function playTimerBeep() {
             
             if (isPlaying) {
                 const t = i / sampleRate;
-                let sine = Math.sin(2 * Math.PI * frequency * t);
+                const sine = Math.sin(2 * Math.PI * frequency * t);
+                let squareValue = sine >= 0 ? 1 : -1; // Square wave for maximum piercing loudness
                 
                 // Fade out at the end of each sub-beep (0.015s) to prevent clicking noises
                 const fadeOutTime = 0.015;
                 const timeRemaining = currentBeepDuration - currentBeepProgress;
                 const fadeRatio = Math.min(1, timeRemaining / fadeOutTime);
-                sine = sine * fadeRatio;
+                squareValue = squareValue * fadeRatio;
                 
                 // Maximize amplitude to 127 for full volume
-                const sampleValue = Math.round((sine + 1) * 127);
+                const sampleValue = Math.round((squareValue + 1) * 127);
                 buffer[44 + i] = sampleValue;
             } else {
                 buffer[44 + i] = 128; // 8-bit silent center value
@@ -909,7 +923,7 @@ function startStopwatch() {
     }
     
     // Request Wake Lock to keep screen awake during the entire workout session
-    requestWakeLock();
+    updateWakeLockState();
     
     stopwatchContainer.classList.remove('paused');
     stopwatchContainer.classList.add('running');
@@ -925,7 +939,7 @@ function stopStopwatch() {
     }
     
     // Release Wake Lock when workout session ends
-    releaseWakeLock();
+    updateWakeLockState();
     
     stopwatchContainer.classList.remove('running');
     stopwatchContainer.classList.remove('paused');
@@ -1028,8 +1042,8 @@ init();
 
 // Handle visibility change to re-acquire Wake Lock if app returns to foreground
 document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && stopwatchInterval !== null) {
-        await requestWakeLock();
+    if (document.visibilityState === 'visible') {
+        updateWakeLockState();
     }
 });
 

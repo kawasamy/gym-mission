@@ -454,6 +454,11 @@ function releaseWakeLock() {
             });
     }
     releaseVideoWakeLock();
+    
+    // Suspend AudioContext to release iOS audio thread/session which can prevent auto-lock
+    if (audioCtx && audioCtx.state === 'running') {
+        audioCtx.suspend().catch(err => console.log('AudioContext suspend failed:', err));
+    }
 }
 
 function requestVideoWakeLock() {

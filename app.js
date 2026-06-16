@@ -8,6 +8,8 @@ let defaultRestDuration = 120; // Default rest duration in seconds (2 minutes)
 let restTimerStartDuration = 120; // Active timer total duration (including +30s)
 let workoutStartTime = null; // Timestamp of first set added
 let stopwatchInterval = null; // Stopwatch ticking interval
+let stopwatchPaused = false; // Is the stopwatch currently paused?
+let stopwatchElapsedMs = 0; // Accumulated elapsed milliseconds when paused
 let lastSetTimestamp = null; // Timestamp of last completed set
 let wakeLock = null; // Screen Wake Lock state
 let restTimerEndTime = null; // Target end timestamp for rest timer
@@ -105,9 +107,18 @@ function init() {
 
     // Load Workout Start Time from localStorage
     const savedStartTime = localStorage.getItem('workout_start_time');
+    const savedIsPaused = localStorage.getItem('workout_is_paused');
     if (savedStartTime !== null) {
         workoutStartTime = parseInt(savedStartTime, 10);
-        startStopwatch();
+        if (savedIsPaused === 'true') {
+            stopwatchPaused = true;
+            stopwatchElapsedMs = parseInt(localStorage.getItem('workout_elapsed_ms'), 10) || 0;
+            stopwatchContainer.classList.add('paused');
+            updateStopwatchDisplayByMs(stopwatchElapsedMs);
+        } else {
+            stopwatchPaused = false;
+            startStopwatch();
+        }
     } else {
         stopwatchDisplay.textContent = '운동 시작';
     }
@@ -392,13 +403,6 @@ function adjustSets(amount) {
         
         // Automatically start rest timer when a set is added (+1)
         startRestTimer();
-        
-        // Start workout stopwatch on the first set added
-        if (totalSets === 1 && workoutStartTime === null) {
-            workoutStartTime = Date.now();
-            localStorage.setItem('workout_start_time', workoutStartTime);
-            startStopwatch();
-        }
     } else {
         // Cancel timer if a set is subtracted (-1)
         cancelRestTimer();
@@ -867,6 +871,10 @@ function performResetSets() {
     // Reset stopwatch on sets reset
     workoutStartTime = null;
     localStorage.removeItem('workout_start_time');
+    localStorage.removeItem('workout_is_paused');
+    localStorage.removeItem('workout_elapsed_ms');
+    stopwatchPaused = false;
+    stopwatchElapsedMs = 0;
     stopStopwatch();
 
     // Reset last rest duration
@@ -891,6 +899,7 @@ function startStopwatch() {
     // Request Wake Lock to keep screen awake during the entire workout session
     requestWakeLock();
     
+    stopwatchContainer.classList.remove('paused');
     stopwatchContainer.classList.add('running');
     updateStopwatchText();
     stopwatchInterval = setInterval(updateStopwatchText, 1000);
@@ -907,29 +916,64 @@ function stopStopwatch() {
     releaseWakeLock();
     
     stopwatchContainer.classList.remove('running');
+    stopwatchContainer.classList.remove('paused');
     stopwatchDisplay.textContent = '운동 시작';
 }
 
-// Manually start the workout session (Stopwatch) without adding a set
-function startWorkoutManually() {
+// Handle clicking on the stopwatch container (Start / Pause / Resume)
+function handleStopwatchClick() {
     if (workoutStartTime === null) {
+        // Start it for the first time
         workoutStartTime = Date.now();
         localStorage.setItem('workout_start_time', workoutStartTime);
+        stopwatchPaused = false;
+        localStorage.setItem('workout_is_paused', 'false');
         startStopwatch();
         if (navigator.vibrate) {
             navigator.vibrate([30, 50, 30]);
         }
+    } else {
+        // Toggle pause / resume
+        if (!stopwatchPaused) {
+            // Pause
+            stopwatchElapsedMs = Date.now() - workoutStartTime;
+            stopwatchPaused = true;
+            localStorage.setItem('workout_is_paused', 'true');
+            localStorage.setItem('workout_elapsed_ms', stopwatchElapsedMs);
+            
+            if (stopwatchInterval) {
+                clearInterval(stopwatchInterval);
+                stopwatchInterval = null;
+            }
+            stopwatchContainer.classList.remove('running');
+            stopwatchContainer.classList.add('paused');
+            
+            // Display current paused time
+            updateStopwatchDisplayByMs(stopwatchElapsedMs);
+            
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+        } else {
+            // Resume
+            workoutStartTime = Date.now() - stopwatchElapsedMs;
+            stopwatchPaused = false;
+            localStorage.setItem('workout_start_time', workoutStartTime);
+            localStorage.setItem('workout_is_paused', 'false');
+            localStorage.removeItem('workout_elapsed_ms');
+            
+            startStopwatch();
+            
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+        }
     }
 }
 
-// Workout Stopwatch - Update Text (formats HH:MM:SS or MM:SS)
-function updateStopwatchText() {
-    if (workoutStartTime === null) {
-        stopStopwatch();
-        return;
-    }
-    const elapsedMs = Date.now() - workoutStartTime;
-    const elapsedSecs = Math.floor(elapsedMs / 1000);
+// Format milliseconds and update stopwatch display text (HH:MM:SS or MM:SS)
+function updateStopwatchDisplayByMs(elapsedMs) {
+    const elapsedSecs = Math.max(0, Math.floor(elapsedMs / 1000));
     const hours = Math.floor(elapsedSecs / 3600);
     const mins = Math.floor((elapsedSecs % 3600) / 60);
     const secs = elapsedSecs % 60;
@@ -943,6 +987,16 @@ function updateStopwatchText() {
     } else {
         stopwatchDisplay.textContent = formattedMins + ':' + formattedSecs;
     }
+}
+
+// Workout Stopwatch - Update Text
+function updateStopwatchText() {
+    if (workoutStartTime === null) {
+        stopStopwatch();
+        return;
+    }
+    const elapsedMs = Date.now() - workoutStartTime;
+    updateStopwatchDisplayByMs(elapsedMs);
 }
 
 // Handle Custom Input Enter key press

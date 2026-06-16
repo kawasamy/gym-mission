@@ -38,7 +38,6 @@ const stopwatchDisplay = document.getElementById('stopwatch-display');
 const stopwatchContainer = document.querySelector('.stopwatch-container');
 const lastRestContainer = document.getElementById('last-rest-container');
 const lastRestDisplay = document.getElementById('last-rest-time');
-const wakeLockVideo = document.getElementById('wake-lock-video');
 
 // Calculate Circle Properties
 const CIRCLE_RADIUS = 76;
@@ -433,16 +432,14 @@ function updateSetsUI(triggerPop = true) {
     localStorage.setItem('workout_sets', totalSets);
 }
 
-// Screen Wake Lock API helpers (Hybrid: Standard WakeLock + Video Loop Fallback)
+// Screen Wake Lock API helpers (Standard Native WakeLock Only)
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
             wakeLock = await navigator.wakeLock.request('screen');
         } catch (err) {
-            requestVideoWakeLock();
+            console.log('Screen Wake Lock request failed:', err);
         }
-    } else {
-        requestVideoWakeLock();
     }
 }
 
@@ -451,36 +448,16 @@ function releaseWakeLock() {
         wakeLock.release()
             .then(() => {
                 wakeLock = null;
+            })
+            .catch(err => {
+                console.log('Screen Wake Lock release failed:', err);
+                wakeLock = null;
             });
     }
-    releaseVideoWakeLock();
     
     // Suspend AudioContext to release iOS audio thread/session which can prevent auto-lock
     if (audioCtx && audioCtx.state === 'running') {
         audioCtx.suspend().catch(err => console.log('AudioContext suspend failed:', err));
-    }
-}
-
-function requestVideoWakeLock() {
-    if (wakeLockVideo) {
-        if (!wakeLockVideo.src || wakeLockVideo.src === window.location.href || wakeLockVideo.src === "") {
-            wakeLockVideo.src = "data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAAAh3aWRlAAAAF21kYXTaAYCAgCBQbGf/gBtAYCAgA==";
-        }
-        wakeLockVideo.play().catch(err => {
-            console.log('Video Wake Lock failed:', err);
-        });
-    }
-}
-
-function releaseVideoWakeLock() {
-    if (wakeLockVideo) {
-        try {
-            wakeLockVideo.pause();
-            wakeLockVideo.removeAttribute('src'); // Completely remove src attribute
-            wakeLockVideo.load(); // Force browser to clear the active media player thread
-        } catch (e) {
-            console.log('Video stop failed:', e);
-        }
     }
 }
 

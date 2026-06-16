@@ -704,25 +704,37 @@ function keepAudioContextAlive() {
     }
 }
 
-// Play soft electronic beep dynamically via Web Audio API (Fallback)
+// Play loud electronic beep dynamically via Web Audio API (Fallback)
 function playWebAudioBeepFallback() {
     try {
         initAudioContext();
         if (!audioCtx) return;
         
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+        const now = audioCtx.currentTime;
         
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 880; // High A note
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        // Helper to play a single beep segment at a specific start time
+        function playBeepSegment(startTime, duration) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1500, startTime); // High pitch (1500Hz)
+            
+            // Set high volume (0.8) and fade out towards the end to prevent clicking
+            gainNode.gain.setValueAtTime(0.8, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
         
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.3);
+        // Play triple beep pattern (삐-삐-삐익)
+        playBeepSegment(now, 0.08);          // Beep 1: 0.08s
+        playBeepSegment(now + 0.12, 0.08);   // Beep 2: 0.08s (after 0.04s silence)
+        playBeepSegment(now + 0.24, 0.16);   // Beep 3: 0.16s (after 0.04s silence)
     } catch (e) {
         console.log('Web Audio fallback beep failed:', e);
     }

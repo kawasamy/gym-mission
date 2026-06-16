@@ -827,15 +827,30 @@ body {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
+    cursor: pointer;
+}
+
+.stopwatch-container:not(.running) {
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
+    animation: pulseStartBtn 2s infinite alternate;
+}
+
+.stopwatch-container:not(.running) .stopwatch-time {
+    color: var(--theme-color);
 }
 
 .stopwatch-container.running {
     border-color: var(--theme-color);
     background: var(--theme-bg);
     box-shadow: 0 0 8px var(--theme-glow);
+}
+
+.stopwatch-container:active {
+    transform: scale(0.96);
 }
 
 .stopwatch-icon {
@@ -1107,40 +1122,6 @@ body {
 
 .btn-modal-close:active {
     transform: scale(0.97);
-}
-
-/* Manual Workout Start Button Styling */
-.start-workout-wrapper {
-    display: flex;
-    justify-content: center;
-    margin: -4px 0 12px 0;
-    z-index: 2;
-    animation: fadeIn 0.4s ease;
-}
-
-.btn-start-workout {
-    background: var(--theme-bg);
-    border: 1px solid var(--theme-color);
-    border-radius: 20px;
-    padding: 8px 24px;
-    color: var(--theme-color);
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 10px var(--theme-glow);
-    animation: pulseStartBtn 2s infinite alternate;
-}
-
-.btn-start-workout:hover {
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: 0 0 16px var(--theme-glow);
-    transform: translateY(-1px);
-}
-
-.btn-start-workout:active {
-    transform: scale(0.95);
 }
 
 @keyframes pulseStartBtn {

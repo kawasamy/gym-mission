@@ -112,18 +112,10 @@
             <div id="view-workout" class="tab-view">
                 <header class="widget-header">
                     <h1>세트 카운터</h1>
-                    <div class="stopwatch-container">
-                        <span class="stopwatch-icon">⏱️</span>
-                        <span id="stopwatch-display" class="stopwatch-time">00:00</span>
+                    <div class="stopwatch-container" onclick="startWorkoutManually()">
+                        <span id="stopwatch-display" class="stopwatch-time">운동 시작</span>
                     </div>
                 </header>
-
-                <!-- Manual Start Button -->
-                <div id="start-workout-wrapper" class="start-workout-wrapper">
-                    <button class="btn-start-workout" onclick="startWorkoutManually()">
-                        <span>🏋️‍♂️ 운동 시작</span>
-                    </button>
-                </div>
 
                 <!-- Workout Sets Display -->
                 <div class="progress-section">

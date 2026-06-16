@@ -37,7 +37,6 @@ const stopwatchContainer = document.querySelector('.stopwatch-container');
 const lastRestContainer = document.getElementById('last-rest-container');
 const lastRestDisplay = document.getElementById('last-rest-time');
 const wakeLockVideo = document.getElementById('wake-lock-video');
-const startWorkoutWrapper = document.getElementById('start-workout-wrapper');
 
 // Calculate Circle Properties
 const CIRCLE_RADIUS = 76;
@@ -109,9 +108,8 @@ function init() {
     if (savedStartTime !== null) {
         workoutStartTime = parseInt(savedStartTime, 10);
         startStopwatch();
-        if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'none';
     } else {
-        if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'flex';
+        stopwatchDisplay.textContent = '운동 시작';
     }
 
     // Load Last Set Timestamp & Formatted Rest Time
@@ -894,7 +892,6 @@ function startStopwatch() {
     requestWakeLock();
     
     stopwatchContainer.classList.add('running');
-    if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'none';
     updateStopwatchText();
     stopwatchInterval = setInterval(updateStopwatchText, 1000);
 }
@@ -910,8 +907,7 @@ function stopStopwatch() {
     releaseWakeLock();
     
     stopwatchContainer.classList.remove('running');
-    if (startWorkoutWrapper) startWorkoutWrapper.style.display = 'flex';
-    stopwatchDisplay.textContent = '00:00';
+    stopwatchDisplay.textContent = '운동 시작';
 }
 
 // Manually start the workout session (Stopwatch) without adding a set
